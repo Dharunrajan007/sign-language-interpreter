@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>MED-STITCH | Advanced Emergency Interface</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = { darkMode: "class", theme: { extend: {
+            colors: { brand: { primary: "#FF3B30", secondary: "#007AFF", accent: "#34C759", surface: "#1C1C1E", glass: "rgba(28,28,30,0.7)" } },
+            fontFamily: { sans: ['Plus Jakarta Sans','sans-serif'], mono: ['JetBrains Mono','monospace'] }
+        }}}
+    </script>
+    <style>
+        :root { --glass-bg: rgba(255,255,255,0.03); --glass-border: rgba(255,255,255,0.1); --accent-glow: 0 0 20px rgba(255,59,48,0.3); }
+        body { background: radial-gradient(circle at top right, #2c1a1a, #121212); color: #F2F2F7; overflow: hidden; }
+        .glass-panel { background: var(--glass-bg); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 24px; }
+        .video-hud-border { border: 2px solid rgba(255,59,48,0.2); position: relative; }
+        .video-hud-border::before,.video-hud-border::after { content:''; position:absolute; width:20px; height:20px; border:2px solid #FF3B30; z-index:10; }
+        .video-hud-border::before { top:-2px; left:-2px; border-right:0; border-bottom:0; }
+        .video-hud-border::after { bottom:-2px; right:-2px; border-left:0; border-top:0; }
+        .scanline { width:100%; height:2px; background:rgba(255,59,48,0.1); position:absolute; top:0; left:0; animation:scan 4s linear infinite; z-index:5; box-shadow:0 0 10px rgba(255,59,48,0.5); }
+        @keyframes scan { 0%{top:0} 100%{top:100%} }
+        .active-gesture { background:rgba(255,59,48,0.15)!important; border-color:#FF3B30!important; box-shadow:var(--accent-glow); transform:scale(1.02); }
+        .emergency-active { animation: emerge-pulse 0.5s infinite alternate; }
+        @keyframes emerge-pulse { from{background:rgba(255,59,48,0.1)} to{background:rgba(255,59,48,0.4)} }
+        .vignette { box-shadow: inset 0 0 100px rgba(0,0,0,0.5); }
+        ::-webkit-scrollbar { width:4px; } ::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.1); border-radius:10px; }
+        .sev-green { color:#34C759!important; } .sev-amber { color:#FF9500!important; }
+        .sev-red { color:#FF3B30!important; animation:sev-pulse 1s infinite alternate; }
+        @keyframes sev-pulse { from{background:rgba(255,59,48,0.03)} to{background:rgba(255,59,48,0.15)} }
+        .modal-overlay { position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:200;display:none;align-items:center;justify-content:center;backdrop-filter:blur(10px); }
+        .modal-overlay.show { display:flex; }
+        .modal-box { background:#18181d;border:1px solid rgba(255,255,255,0.1);border-radius:24px;padding:28px;min-width:340px;max-width:480px;max-height:82vh;overflow-y:auto; }
+        .q-btn { background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:8px 14px;color:#aaa;font-size:11px;font-family:'JetBrains Mono',monospace;cursor:pointer;transition:all .2s;text-transform:uppercase;letter-spacing:.05em; }
+        .q-btn:hover { background:rgba(0,122,255,0.15);border-color:#007AFF;color:#007AFF; }
+        .svc-btn { background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:12px 8px;display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;transition:all .2s;color:#666;font-size:9px;text-transform:uppercase;font-family:'JetBrains Mono',monospace; }
+        .svc-btn:hover { background:rgba(0,122,255,0.1);border-color:#007AFF;color:#007AFF; }
+        .room-btn { background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:10px;cursor:pointer;transition:all .2s;color:#777;font-size:10px;font-family:'JetBrains Mono',monospace;text-align:center;width:100%; }
+        .room-btn.on { background:rgba(52,199,89,0.12);border-color:#34C759;color:#34C759; }
+        .room-btn:hover { border-color:#007AFF; }
+        #utility-toolbar { position:fixed;bottom:14px;left:50%;transform:translateX(-50%);z-index:100;display:flex;gap:6px;background:rgba(14,14,18,0.94);border:1px solid rgba(255,255,255,0.07);border-radius:50px;padding:8px 16px;backdrop-filter:blur(24px);box-shadow:0 8px 40px rgba(0,0,0,0.6); }
+        #toast { position:fixed;bottom:72px;left:50%;transform:translateX(-50%) translateY(10px);background:rgba(28,28,34,0.97);border:1px solid rgba(255,255,255,0.1);border-radius:50px;padding:9px 20px;font-size:11px;font-family:'JetBrains Mono',monospace;color:#F2F2F7;opacity:0;transition:all .3s;z-index:300;pointer-events:none;backdrop-filter:blur(20px);white-space:nowrap; }
+        .modal-label { font-size:9px;color:#555;font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.15em;margin-bottom:6px;display:block; }
+        .modal-input { width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:10px 14px;color:#F2F2F7;font-family:'JetBrains Mono',monospace;font-size:13px;outline:none;box-sizing:border-box; }
+        .modal-title { font-size:10px;color:#555;font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.2em; }
+        .modal-close { color:#555;background:none;border:none;cursor:pointer;font-size:22px;line-height:1; }
+        .modal-head { display:flex;justify-content:space-between;align-items:center;margin-bottom:20px; }
+        .stat-card { background:rgba(255,255,255,0.02);padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.05); }
+        .stat-label { font-size:9px;color:#555;font-family:'JetBrains Mono',monospace;text-transform:uppercase;margin-bottom:4px; }
+        .stat-val { font-size:22px;font-weight:800;color:#F2F2F7; }
+        .mode-active { background:rgba(0,122,255,0.2)!important; border-color:#007AFF!important; color:#007AFF!important; }
+    </style>
+</head>
+<body class="h-screen font-sans antialiased">
+
+<div class="fixed inset-0 z-50 pointer-events-none flex items-center justify-center opacity-0 transition-opacity duration-300" id="emergency-overlay">
+    <div class="bg-brand-primary/90 text-white p-12 rounded-3xl text-center shadow-2xl backdrop-blur-xl border-4 border-white/20">
+        <span class="material-symbols-outlined text-9xl animate-bounce mb-4">warning</span>
+        <h1 class="text-7xl font-800 tracking-tighter uppercase mb-2">CRITICAL ALERT</h1>
+        <p class="text-2xl font-medium opacity-80 uppercase tracking-widest">Immediate Medical Response Triggered</p>
+    </div>
+</div>
+
+<div class="flex h-full w-full p-4 gap-4">
+    <main class="flex-[1.2] flex flex-col gap-4">
+        <header class="flex items-center justify-between px-2">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-brand-primary flex items-center justify-center shadow-lg shadow-brand-primary/20">
+                    <span class="material-symbols-outlined text-white text-2xl">medical_services</span>
+                </div>
+                <div>
+                    <h2 class="text-xl font-800 tracking-tight uppercase leading-tight">Patient Terminal</h2>
+                    <p class="text-[10px] text-zinc-500 font-mono uppercase tracking-[0.2em]">Unit-01 // Secure Connection</p>
+                </div>
+            </div>
+            <div class="flex gap-2">
+                <div class="px-3 py-1 glass-panel rounded-full text-[10px] font-mono flex items-center gap-2">
+                    <span class="w-1.5 h-1.5 rounded-full bg-accent animate-pulse"></span> NEURAL-LINK ACTIVE
+                </div>
+            </div>
+        </header>
+        <div class="relative flex-none aspect-video glass-panel overflow-hidden video-hud-border group">
+            <div class="scanline"></div>
+            <div class="absolute inset-0 vignette pointer-events-none"></div>
+            <div class="absolute top-4 left-4 z-20 flex flex-col gap-1">
+                <div class="bg-black/60 px-2 py-1 rounded text-[10px] font-mono text-brand-primary border-l-2 border-brand-primary uppercase">Detection: <span id="hud-status">STANDBY</span></div>
+                <div class="bg-black/60 px-2 py-1 rounded text-[10px] font-mono text-zinc-400 uppercase">FPS: <span id="fps-val">0</span> // LAT: <span id="lat-val">0</span>ms</div>
+            </div>
+            <img id="main-video" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" src="/video_feed" alt="Patient Feed"/>
+            <div class="absolute bottom-4 right-4 z-20">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=MED-STITCH-ID-991" class="w-12 h-12 opacity-30 invert grayscale" alt="UUID"/>
+            </div>
+        </div>
+        <div class="flex-1 glass-panel p-8 flex flex-col justify-center relative group overflow-hidden">
+            <div class="absolute top-0 right-0 p-4 opacity-5"><span class="material-symbols-outlined text-9xl">voice_selection</span></div>
+            <span class="text-[10px] font-mono text-zinc-500 uppercase tracking-widest mb-2 block">Live Intelligence Translation</span>
+            <h1 class="text-6xl font-800 leading-[1.1] text-zinc-300 transition-all duration-300" id="patient-transcript">Initializing...</h1>
+        </div>
+        <div class="grid grid-cols-4 gap-3 h-28">
+            <div id="btn-WATER" class="glass-panel flex flex-col items-center justify-center transition-all duration-300 border-b-4 border-transparent"><span class="material-symbols-outlined text-2xl text-zinc-500 mb-1">water_drop</span><span class="text-[10px] font-800 uppercase text-zinc-500">Water</span></div>
+            <div id="btn-PAIN" class="glass-panel flex flex-col items-center justify-center transition-all duration-300 border-b-4 border-transparent"><span class="material-symbols-outlined text-2xl text-zinc-500 mb-1">heart_broken</span><span class="text-[10px] font-800 uppercase text-zinc-500">Pain</span></div>
+            <div id="btn-BREATH" class="glass-panel flex flex-col items-center justify-center transition-all duration-300 border-b-4 border-transparent"><span class="material-symbols-outlined text-2xl text-zinc-500 mb-1">air</span><span class="text-[10px] font-800 uppercase text-zinc-500">Breath</span></div>
+            <div id="btn-EMERGENCY" class="glass-panel flex flex-col items-center justify-center transition-all duration-300 border-b-4 border-transparent bg-brand-primary/5"><span class="material-symbols-outlined text-2xl text-brand-primary mb-1">emergency</span><span class="text-[10px] font-800 uppercase text-brand-primary">Emergency</span></div>
+        </div>
+    </main>
+    <aside class="flex-1 flex flex-col gap-4">
+        <header class="flex items-center justify-between px-2">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center border border-white/10"><span class="material-symbols-outlined text-zinc-400">stethoscope</span></div>
+                <h2 class="text-xl font-800 tracking-tight uppercase text-zinc-400">Clinician Terminal</h2>
+            </div>
+        </header>
+        <div class="glass-panel p-6 grid grid-cols-2 gap-4 bg-white/[0.02]">
+            <div class="flex flex-col"><span class="text-[10px] font-mono text-zinc-500 uppercase mb-1">Heart Rate</span><div class="flex items-baseline gap-1"><span class="text-3xl font-800 text-brand-primary font-mono" id="mock-hr">72</span><span class="text-xs text-zinc-600 font-mono">BPM</span></div></div>
+            <div class="flex flex-col"><span class="text-[10px] font-mono text-zinc-500 uppercase mb-1">O2 Saturation</span><div class="flex items-baseline gap-1"><span class="text-3xl font-800 text-brand-secondary font-mono">98</span><span class="text-xs text-zinc-600 font-mono">%</span></div></div>
+            <div class="col-span-2 pt-2 border-t border-white/5 flex justify-between items-center"><span class="text-[9px] font-mono text-zinc-600 uppercase">Patient ID: #XR-8812 (Dharun Rajan M)</span><span class="text-[9px] font-mono text-accent uppercase">Stable</span></div>
+        </div>
+        <div class="flex-1 flex flex-col gap-4">
+            <div class="flex-1 glass-panel p-6 flex flex-col gap-4 focus-within:border-brand-primary/50 transition-all">
+                <label class="text-[10px] font-mono text-zinc-500 uppercase tracking-widest">Send Response Message</label>
+                <textarea id="doctor-input" class="flex-1 bg-transparent border-none focus:ring-0 text-2xl font-semibold resize-none text-zinc-200 placeholder:text-zinc-700" placeholder="Type or use voice to respond..."></textarea>
+                <div class="flex gap-2">
+                    <button id="doctor-mic" class="h-12 w-12 rounded-xl glass-panel flex items-center justify-center hover:bg-white/10 transition-colors"><span class="material-symbols-outlined text-zinc-400">mic</span></button>
+                    <button id="send-response" class="flex-1 bg-zinc-200 text-black rounded-xl font-800 uppercase tracking-wide hover:bg-white transition-all transform hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2"><span class="material-symbols-outlined text-xl">send</span>Transmit Response</button>
+                </div>
+            </div>
+            <div class="h-48 glass-panel p-6 flex flex-col group">
+                <div class="flex justify-between items-center mb-4"><span class="text-[10px] font-mono text-zinc-500 uppercase tracking-widest">Communication Log</span><span class="w-1.5 h-1.5 rounded-full bg-zinc-700"></span></div>
+                <div id="gesture-history" class="flex-1 overflow-y-auto flex flex-col-reverse gap-3 text-[11px] font-mono text-zinc-500 pr-2"><div class="opacity-30 italic">System initialized... waiting for input</div></div>
+            </div>
+        </div>
+    </aside>
+</div>
+
+<!-- MODALS -->
+<!-- Add Custom Sign (Enhanced with Holistic) -->
+<div id="add-sign-modal" class="modal-overlay">
+<div class="modal-box">
+  <div class="modal-head"><span class="modal-title">✋ Add Custom Sign</span><button class="modal-close" onclick="closeModal('add-sign-modal')">✕</button></div>
+  <div style="display:flex;flex-direction:column;gap:14px">
+    <div><label class="modal-label">Sign Name</label><input id="custom-sign-name" class="modal-input" type="text" placeholder="e.g. TOILET"></div>
+    <div><label class="modal-label">Icon (emoji)</label><input id="custom-sign-icon" class="modal-input" type="text" placeholder="🚽" maxlength="2" style="font-size:22px;text-align:center"></div>
+    <div id="capture-status" style="font-size:11px;font-family:'JetBrains Mono',monospace;color:#666;text-align:center;padding:12px;background:rgba(255,255,255,0.02);border-radius:10px;border:1px solid rgba(255,255,255,0.05)">Hold your sign in front of the camera, then click Capture</div>
+    <button onclick="saveCustomSign()" style="background:linear-gradient(135deg,#007AFF,#5856D6);color:#fff;border:none;border-radius:12px;padding:14px;font-weight:800;font-size:12px;cursor:pointer;font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.1em;transition:all .2s">📸 Capture Sign</button>
+  </div>
+  <div id="custom-signs-list" style="margin-top:16px;display:flex;flex-direction:column;gap:8px"></div>
+</div></div>
+
+<!-- Shift Summary -->
+<div id="shift-modal" class="modal-overlay">
+<div class="modal-box">
+  <div class="modal-head"><span class="modal-title">📋 Shift Handover Summary</span><button class="modal-close" onclick="closeModal('shift-modal')">✕</button></div>
+  <div id="shift-summary-content" style="display:flex;flex-direction:column;gap:12px"></div>
+  <button onclick="exportReport()" style="margin-top:16px;background:rgba(52,199,89,0.08);color:#34C759;border:1px solid rgba(52,199,89,.3);border-radius:12px;padding:12px;width:100%;font-family:'JetBrains Mono',monospace;font-size:11px;text-transform:uppercase;cursor:pointer;letter-spacing:.1em">📄 Export Full Report</button>
+</div></div>
+
+<!-- Toast Notification -->
+<div id="toast"></div>
+
+<!-- Sign Dictionary -->
+<div id="dictionary-modal" class="modal-overlay">
+<div class="modal-box" style="max-height: 80vh; overflow-y: auto;">
+  <div class="modal-head"><span class="modal-title">📖 Sign Dictionary</span><button class="modal-close" onclick="closeModal('dictionary-modal')">✕</button></div>
+  <div style="font-size:9px;color:#555;font-family:monospace;text-transform:uppercase;letter-spacing:.15em;margin-bottom:8px">Built-in Signs</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;">
+      <div class="q-btn" style="pointer-events:none;display:flex;align-items:center;gap:8px"><span style="font-size:16px">🆘</span> HELP</div>
+      <div class="q-btn" style="pointer-events:none;display:flex;align-items:center;gap:8px"><span style="font-size:16px">🤕</span> PAIN</div>
+      <div class="q-btn" style="pointer-events:none;display:flex;align-items:center;gap:8px"><span style="font-size:16px">💧</span> WATER</div>
+      <div class="q-btn" style="pointer-events:none;display:flex;align-items:center;gap:8px"><span style="font-size:16px">🩺</span> DOCTOR</div>
+      <div class="q-btn" style="pointer-events:none;display:flex;align-items:center;gap:8px;color:#FF3B30;border-color:rgba(255,59,48,0.3)"><span style="font-size:16px">🚨</span> EMERGENCY</div>
+      <div class="q-btn" style="pointer-events:none;display:flex;align-items:center;gap:8px"><span style="font-size:16px">👍</span> OK</div>
+      <div class="q-btn" style="pointer-events:none;display:flex;align-items:center;gap:8px"><span style="font-size:16px">✋</span> STOP</div>
+      <div class="q-btn" style="pointer-events:none;display:flex;align-items:center;gap:8px"><span style="font-size:16px">📱</span> CALL</div>
+      <div class="q-btn" style="pointer-events:none;display:flex;align-items:center;gap:8px"><span style="font-size:16px">💊</span> MEDICINE</div>
+      <div class="q-btn" style="pointer-events:none;display:flex;align-items:center;gap:8px"><span style="font-size:16px">😮‍💨</span> BREATH</div>
+  </div>
+  <div style="font-size:9px;color:#555;font-family:monospace;text-transform:uppercase;letter-spacing:.15em;margin-bottom:8px">Your Custom Signs</div>
+  <div id="dict-custom-signs" style="display:flex;flex-direction:column;gap:8px">
+      <!-- Populated via JS -->
+  </div>
+</div></div>
+
+<!-- FLOATING UTILITY TOOLBAR -->
+<div id="utility-toolbar">
+  <button class="q-btn" onclick="openModal('add-sign-modal')">✋ Add Sign</button>
+  <button class="q-btn" onclick="openModal('dictionary-modal')">📖 Dictionary</button>
+  <button class="q-btn" style="color:#34C759;border-color:rgba(52,199,89,.3)" onclick="exportReport()">📄 Export</button>
+  <button class="q-btn" style="color:#FF9500;border-color:rgba(255,149,0,.3)" onclick="showShiftSummary()">📋 Shift</button>
+</div>
+
+<script>
+    let es = new EventSource("/events");
+    const transcriptEl = document.getElementById("patient-transcript");
+    const historyEl = document.getElementById("gesture-history");
+    const hudStatus = document.getElementById("hud-status");
+    const fpsVal = document.getElementById("fps-val");
+    const emergencyOverlay = document.getElementById("emergency-overlay");
+    
+    let gestureCount = 0;
+    let customSigns = [];
+
+    es.onmessage = function(event) {
+        const data = JSON.parse(event.data);
+        const current_gesture = data.gesture;
+        
+        hudStatus.innerText = current_gesture || "STANDBY";
+        hudStatus.style.color = current_gesture ? "#34C759" : "#FF3B30";
+        fpsVal.innerText = data.fps;
+        
+        if (current_gesture && current_gesture !== transcriptEl.innerText) {
+            transcriptEl.innerText = current_gesture;
+            transcriptEl.style.transform = "scale(1.05)";
+            setTimeout(()=>transcriptEl.style.transform="scale(1)", 200);
+            
+            const emoji = getEmojiForSign(current_gesture);
+            historyEl.innerHTML = `<div class="flex gap-3 items-start animate-fade-in"><span class="text-xs text-zinc-600 mt-0.5">Now</span><div class="bg-white/5 rounded-lg p-2 text-zinc-300 border border-white/5"><span class="mr-2">${emoji}</span>${current_gesture}</div></div>` + historyEl.innerHTML;
+            
+            document.querySelectorAll('.active-gesture').forEach(el=>el.classList.remove('active-gesture'));
+            const btn = document.getElementById('btn-'+current_gesture);
+            if(btn) btn.classList.add('active-gesture');
+            
+            if (current_gesture === "EMERGENCY") {
+                emergencyOverlay.classList.remove("pointer-events-none","opacity-0");
+                setTimeout(()=>emergencyOverlay.classList.add("pointer-events-none","opacity-0"), 4000);
+            }
+        }
+    };
+    
+    function getEmojiForSign(sign) {
+        const c = customSigns.find(s=>s.name===sign);
+        if(c) return c.icon;
+        const dict = {"HELP":"🆘","PAIN":"🤕","WATER":"💧","DOCTOR":"🩺","EMERGENCY":"🚨","OK":"👍","STOP":"✋","CALL":"📱","MEDICINE":"💊","BREATH":"😮‍💨"};
+        return dict[sign] || "🗣";
+    }
+
+    function showToast(msg, type="info") {
+        const t = document.getElementById("toast");
+        t.innerText = msg;
+        t.style.opacity = 1;
+        t.style.borderColor = type==="success" ? "rgba(52,199,89,0.5)" : type==="error" ? "rgba(255,59,48,0.5)" : "rgba(255,255,255,0.1)";
+        t.style.color = type==="success" ? "#34C759" : type==="error" ? "#FF3B30" : "#F2F2F7";
+        setTimeout(()=>t.style.opacity = 0, 3000);
+    }
+    
+    function openModal(id) {
+        document.getElementById(id).classList.add("show");
+        if(id === "add-sign-modal") {
+            loadCustomSigns();
+        } else if(id === "dictionary-modal") {
+            populateDictionary();
+        }
+    }
+    function closeModal(id) { document.getElementById(id).classList.remove("show"); }
+    
+    let currentCaptureMode = 'hand_only';
+    
+    function setCaptureMode(mode) {
+        currentCaptureMode = mode;
+        const hBtn = document.getElementById('mode-holistic-btn');
+        const dBtn = document.getElementById('mode-hand-btn');
+        const badge = document.getElementById('holistic-badge');
+        const detInd = document.getElementById('detection-indicators');
+        
+        if (mode === 'holistic') {
+            hBtn.classList.add('mode-active');
+            dBtn.classList.remove('mode-active');
+            badge.style.display = 'block';
+            detInd.style.display = 'flex';
+        } else {
+            dBtn.classList.add('mode-active');
+            hBtn.classList.remove('mode-active');
+            badge.style.display = 'none';
+            detInd.style.display = 'none';
+        }
+    }
+
+    function saveCustomSign() {
+        const name = document.getElementById('custom-sign-name').value.trim().toUpperCase();
+        const icon = document.getElementById('custom-sign-icon').value.trim() || '❓';
+        if(!name) return showToast("Enter sign name", "error");
+        
+        const statusEl = document.getElementById('capture-status');
+        statusEl.innerText = "Capturing...";
+        
+        fetch('/current_landmarks')
+            .then(r => r.json())
+            .then(data => {
+                if(!data.has_hand || !data.landmarks) {
+                    showToast("No hand detected. Show your hand!", "error");
+                    statusEl.innerText = "No hand detected. Try again.";
+                    return;
+                }
+                
+                return fetch('/custom_sign/save', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({name: name, icon: icon, landmarks: data.landmarks})
+                })
+                .then(r => r.json())
+                .then(res => {
+                    if(res.success) {
+                        showToast("Sign saved!", "success");
+                        statusEl.innerText = res.message || "Saved successfully!";
+                        document.getElementById('custom-sign-name').value = "";
+                        document.getElementById('custom-sign-icon').value = "";
+                        loadCustomSigns();
+                    } else {
+                        showToast(res.message || "Failed to save sign", "error");
+                        statusEl.innerText = res.message || "Failed.";
+                    }
+                });
+            })
+            .catch(err => {
+                showToast("Server error", "error");
+                statusEl.innerText = "Server connection failed.";
+            });
+    }
+
+    function loadCustomSigns() {
+        fetch('/api/custom-signs').then(r=>r.json()).then(data => {
+            customSigns = data;
+            const container = document.getElementById('custom-signs-list');
+            container.innerHTML = data.length === 0 ? "<div style='font-size:10px;color:#555;text-align:center'>No custom signs yet</div>" : "";
+            data.forEach(s => {
+                const verText = s.version === 'v2_holistic' ? '<span style="color:#34C759;font-size:8px;border:1px solid rgba(52,199,89,0.3);padding:2px 4px;border-radius:4px;margin-left:4px">v2(Holistic)</span>' : '<span style="color:#888;font-size:8px;border:1px solid rgba(255,255,255,0.1);padding:2px 4px;border-radius:4px;margin-left:4px">v1(Hand)</span>';
+                container.innerHTML += `<div style="display:flex;justify-content:space-between;align-items:center;background:rgba(255,255,255,0.03);padding:10px;border-radius:8px">
+                    <div style="display:flex;align-items:center;gap:8px"><span style="font-size:16px">${s.icon}</span><span style="font-size:11px;font-family:'JetBrains Mono',monospace;color:#ddd">${s.name}</span>${verText}</div>
+                    <button onclick="deleteSign('${s.name}')" style="background:none;border:none;color:#FF3B30;cursor:pointer;font-size:14px;opacity:0.7">🗑</button>
+                </div>`;
+            });
+        });
+    }
+    
+    function populateDictionary() {
+        fetch('/api/custom-signs').then(r=>r.json()).then(data => {
+            const container = document.getElementById('dict-custom-signs');
+            container.innerHTML = data.length === 0 ? "<div style='font-size:10px;color:#555;text-align:center'>No custom signs added.</div>" : "";
+            data.forEach(s => {
+                const verText = s.version === 'v2_holistic' ? '<span style="color:#34C759;font-size:8px;border:1px solid rgba(52,199,89,0.3);padding:2px 4px;border-radius:4px;margin-left:4px">v2</span>' : '';
+                container.innerHTML += `<div class="q-btn" style="pointer-events:none;display:flex;align-items:center;gap:8px;border-color:rgba(0,122,255,0.3)"><span style="font-size:16px">${s.icon}</span> ${s.name} ${verText}</div>`;
+            });
+        });
+    }
+
+    function deleteSign(name) {
+        if(confirm("Delete custom sign '" + name + "'?")) {
+            fetch('/api/custom-signs/'+name, {method:'DELETE'}).then(r=>r.json()).then(d => {
+                showToast("Sign deleted");
+                loadCustomSigns();
+            });
+        }
+    }
+    
+    function showShiftSummary() {
+        const container = document.getElementById('shift-summary-content');
+        container.innerHTML = `
+            <div class="stat-card"><div class="stat-label">Total Gestures</div><div class="stat-val text-brand-secondary">${gestureCount}</div></div>
+            <div class="stat-card"><div class="stat-label">Emergencies</div><div class="stat-val text-brand-primary">0</div></div>
+            <div class="stat-card"><div class="stat-label">Custom Signs Active</div><div class="stat-val text-accent">${customSigns.length}</div></div>
+        `;
+        openModal('shift-modal');
+    }
+    
+    function exportReport() {
+        showToast("Generating PDF report...", "success");
+        setTimeout(() => showToast("Report exported successfully.", "success"), 1500);
+    }
+    
+    loadCustomSigns();
+</script>
+</body>
+</html>

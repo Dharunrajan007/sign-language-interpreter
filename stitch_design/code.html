@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Emergency Medical Interface - Dual Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-variant": "#e2e2e5",
+                        "tertiary-container": "#008097",
+                        "tertiary": "#006578",
+                        "surface-tint": "#bb171c",
+                        "primary-container": "#db322f",
+                        "secondary-fixed": "#ffdad6",
+                        "inverse-primary": "#ffb4ac",
+                        "on-secondary": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "on-secondary-fixed": "#410002",
+                        "inverse-on-surface": "#f0f0f3",
+                        "surface-container-high": "#e8e8ea",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-low": "#f3f3f6",
+                        "on-tertiary-fixed-variant": "#004e5d",
+                        "surface-container": "#eeeef0",
+                        "outline-variant": "#e4beb9",
+                        "on-primary-fixed": "#410002",
+                        "secondary": "#a13d36",
+                        "surface": "#f9f9fc",
+                        "surface-container-highest": "#e2e2e5",
+                        "on-primary-fixed-variant": "#93000d",
+                        "primary-fixed-dim": "#ffb4ac",
+                        "secondary-container": "#ff857a",
+                        "on-background": "#1a1c1e",
+                        "error-container": "#ffdad6",
+                        "on-surface": "#1a1c1e",
+                        "tertiary-fixed-dim": "#72d4ef",
+                        "error": "#ba1a1a",
+                        "secondary-fixed-dim": "#ffb4ac",
+                        "outline": "#906f6c",
+                        "surface-dim": "#dadadc",
+                        "on-tertiary-fixed": "#001f27",
+                        "on-secondary-container": "#751d19",
+                        "on-surface-variant": "#5b403d",
+                        "tertiary-fixed": "#afecff",
+                        "primary": "#b7131a",
+                        "on-error-container": "#93000a",
+                        "on-primary-container": "#fffbff",
+                        "on-secondary-fixed-variant": "#822622",
+                        "background": "#f9f9fc",
+                        "on-tertiary-container": "#f9fdff",
+                        "inverse-surface": "#2f3133",
+                        "surface-bright": "#f9f9fc",
+                        "primary-fixed": "#ffdad6",
+                        "on-error": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Public Sans"],
+                        "body": ["Public Sans"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f9f9fc; }
+        ::-webkit-scrollbar-thumb { background: #e2e2e5; border-radius: 4px; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body h-screen overflow-hidden">
+<div class="flex h-full w-full">
+<!-- LEFT PANEL: PATIENT SIDE -->
+<section class="flex flex-col w-1/2 h-full border-r border-surface-container-high bg-surface">
+<!-- Header -->
+<header class="p-6 bg-surface-container-high">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">emergency</span>
+<h2 class="font-headline text-xl font-800 uppercase tracking-tight">Patient Control Panel</h2>
+</div>
+</header>
+<!-- Main Content Area -->
+<div class="flex-1 flex flex-col p-6 gap-6 overflow-y-auto">
+<!-- Camera Feed Section -->
+<div class="relative w-full aspect-video bg-black rounded-lg overflow-hidden flex items-center justify-center">
+<div class="absolute top-4 left-4 flex items-center gap-2 bg-black/60 px-3 py-1 rounded text-white text-xs font-label uppercase tracking-widest">
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+                        Live Feed: Gesture Detection Active
+                    </div>
+<img alt="Patient camera view" class="w-full h-full object-cover opacity-60 grayscale" data-alt="Close-up of a hospital patient lying in a bed with medical monitoring equipment visible in a softly blurred background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB9zybsC1hRxpNdLjro46MtQyWR3nYcVqzZ8KHRQv0-l7Fs8XpYODsmwS00uuNL17ZSDxkd47EvtBaYvLsgflcibV82YUcTFckzDtmHsK7ycTVyuls8CHvTz6Q4jj7hzp_ra7cBjVUufcMpXe0fUAU0tnAclE3wbjA5QlHF0S18a3eCUZ6fwZ1CJYTW4wewdxcVYlFu2EWY_icOosPh6sqzmttB7dbbrKJEmDObkV_slcG5iR5YfIJtW9NfCqYtGPYGCCAxSCw9Wpjz"/>
+<div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+<span class="material-symbols-outlined text-white/20 text-9xl">person</span>
+</div>
+</div>
+<!-- Massive Text Display -->
+<div class="flex-1 bg-surface-container-low p-8 rounded-xl flex flex-col justify-center min-h-[200px]">
+<p class="text-on-surface-variant font-label text-sm uppercase tracking-widest mb-4">Live Transcription</p>
+<h1 class="font-headline text-5xl font-800 leading-tight text-on-surface" id="patient-transcript">
+                        "I need help with my breathing"
+                    </h1>
+</div>
+<!-- Emergency Grid -->
+<div class="grid grid-cols-2 gap-4">
+<button class="bg-primary hover:bg-primary-container text-on-primary p-8 rounded-xl flex flex-col items-center gap-4 transition-colors">
+<span class="material-symbols-outlined text-4xl" data-weight="fill">cardiology</span>
+<span class="font-headline text-xl font-700 uppercase">Chest Pain</span>
+</button>
+<button class="bg-primary hover:bg-primary-container text-on-primary p-8 rounded-xl flex flex-col items-center gap-4 transition-colors">
+<span class="material-symbols-outlined text-4xl" data-weight="fill">air</span>
+<span class="font-headline text-xl font-700 uppercase">Breathing</span>
+</button>
+<button class="bg-surface-container-highest hover:bg-surface-variant text-on-surface p-8 rounded-xl flex flex-col items-center gap-4 transition-colors">
+<span class="material-symbols-outlined text-4xl" data-weight="fill">water_drop</span>
+<span class="font-headline text-xl font-700 uppercase">Need Water</span>
+</button>
+<button class="bg-surface-container-highest hover:bg-surface-variant text-on-surface p-8 rounded-xl flex flex-col items-center gap-4 transition-colors">
+<span class="material-symbols-outlined text-4xl" data-weight="fill">call</span>
+<span class="font-headline text-xl font-700 uppercase">Call Family</span>
+</button>
+</div>
+</div>
+<!-- Bottom Mic Button -->
+<div class="p-6 bg-surface-container-low">
+<button class="w-full bg-primary py-8 rounded-full flex items-center justify-center gap-4 text-on-primary shadow-lg shadow-primary/20" id="patient-mic">
+<span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 1;">mic</span>
+<span class="font-headline text-2xl font-800 uppercase">Hold to Speak</span>
+</button>
+</div>
+</section>
+<!-- RIGHT PANEL: DOCTOR SIDE -->
+<section class="flex flex-col w-1/2 h-full bg-surface-container-low">
+<!-- Header -->
+<header class="p-6 bg-surface-container-highest">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-on-surface" style="font-variation-settings: 'FILL' 1;">medical_services</span>
+<h2 class="font-headline text-xl font-800 uppercase tracking-tight">Clinician Interface</h2>
+</div>
+</header>
+<div class="flex-1 flex flex-col p-6 gap-6 overflow-y-auto">
+<!-- Input Area -->
+<div class="flex flex-col gap-4">
+<label class="font-label text-xs uppercase tracking-widest text-on-surface-variant font-600">Response Console</label>
+<textarea class="w-full h-40 bg-surface-container-lowest border-none focus:ring-0 text-3xl font-headline p-6 rounded-xl placeholder:text-surface-variant resize-none" id="doctor-input" placeholder="Type response for the patient..."></textarea>
+</div>
+<!-- Action Bar -->
+<div class="flex gap-4">
+<button class="flex-1 bg-surface-container-highest py-6 rounded-xl flex items-center justify-center gap-3 hover:bg-surface-variant transition-colors" id="doctor-mic">
+<span class="material-symbols-outlined text-3xl">mic_none</span>
+<span class="font-headline text-lg font-700 uppercase">Voice Input</span>
+</button>
+<button class="flex-[2] bg-primary text-on-primary py-6 rounded-xl flex items-center justify-center gap-3 hover:bg-primary-container transition-colors shadow-lg shadow-primary/10" id="send-response">
+<span class="material-symbols-outlined text-3xl">send</span>
+<span class="font-headline text-lg font-800 uppercase tracking-wide">Send to Patient</span>
+</button>
+</div>
+<!-- Output Preview Area -->
+<div class="flex-1 mt-4 flex flex-col gap-4">
+<label class="font-label text-xs uppercase tracking-widest text-on-surface-variant font-600">Live Output Preview</label>
+<div class="flex-1 bg-white rounded-xl border-2 border-primary/10 p-8 flex flex-col justify-between shadow-sm">
+<div class="font-headline text-4xl font-800 text-primary leading-tight" id="output-preview">
+                            ---
+                        </div>
+<div class="flex justify-end pt-4 border-t border-surface-container-low">
+<button class="flex items-center gap-3 bg-on-surface text-surface px-6 py-4 rounded-full hover:opacity-90 transition-opacity" id="play-audio">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+<span class="font-headline text-sm font-700 uppercase">Play Audio for Patient</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer Meta -->
+<footer class="px-6 py-4 bg-surface-container-high flex justify-between items-center text-on-surface-variant font-label text-xs uppercase tracking-tighter">
+<div class="flex gap-6">
+<span>Protocol: RED-88</span>
+<span>Lat: 12ms</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-tertiary"></span>
+                    System Online
+                </div>
+</footer>
+</section>
+</div>
+<!-- Hidden audio for status sounds if needed -->
+</body></html>
